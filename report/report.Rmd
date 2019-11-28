@@ -1,0 +1,267 @@
+---
+title: "Seleção de Atributos com Algorítmos Genéticos"
+subtitle: "Laboratório de Aprendizagem de Máquina"
+author: "Antonio C. da Silva Júnior"
+date: "`r format(Sys.time(), '%d/%m/%Y')`"
+output:
+  html_document:
+    #theme: cerulean
+    highlight: kate
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r, echo=FALSE}
+df <- read.csv("../out.csv", header = F)
+
+df_names <- c()
+for (i in 1:(ncol(df)-5)) {
+  df_names = append(df_names, str_c("x", i, sep = ""))
+}
+df_names <- append(df_names, c("rec_rate", "n_feat", "all_feat", "best_ind", "clf"))
+names(df) <- df_names
+rm(df_names)
+
+df_lda <- df %>%
+  filter(clf == "LDA")
+
+df_perc <- df %>%
+  filter(clf == "Perceptron")
+```
+
+<br>
+
+# Análise Exploratória
+
+<hr>
+
+## Base de validação
+
+<br>
+
+### Desempenho médio
+
+<br>
+
+#### Geral:
+```{r, echo=FALSE}
+des_val <- mean(df$rec_rate)
+des_val
+```
+
+<br>
+
+#### LDA:
+```{r, echo=FALSE}
+des_val_lda <- mean(df_lda$rec_rate)
+des_val_lda
+```
+
+<br>
+
+#### Perceptron:
+```{r, echo=FALSE}
+des_val_perc <- mean(df_perc$rec_rate)
+des_val_perc
+```
+
+<hr>
+
+### Características selecionadas (média)
+
+<br>
+
+#### Geral:
+```{r, echo=FALSE}
+feat_val <- mean(df$n_feat)
+feat_val
+```
+
+<br>
+
+#### LDA:
+```{r, echo=FALSE}
+feat_val_lda <- mean(df_lda$n_feat)
+feat_val_lda
+```
+
+<br>
+
+#### Perceptron:
+```{r, echo=FALSE}
+feat_val_perc <- mean(df_perc$n_feat)
+feat_val_perc
+```
+
+<br>
+
+### Características selecionadas (número de vezes)
+
+<br>
+
+#### Geral:
+```{r, echo=FALSE}
+df_gather <- df[1:132] %>%
+  gather("feature", "selected")
+
+df_gather <- df_gather %>%
+  group_by(feature) %>%
+  summarise(n_select = sum(selected)) %>%
+  arrange(n_select)
+
+summary(df_gather$n_select)
+
+ggplot(df_gather, aes(x = n_select)) +
+  geom_histogram(binwidth = 1, alpha = 0.6, color = "blue", fill = "blue") +
+  labs(x = "Vezes selecionada", y = "Frequência")
+```
+
+No geral, todas as características foram selecionadas no mínimo 5 vezes.
+
+<br>
+
+#### LDA:
+```{r, echo=FALSE}
+df_gather_lda <- df_lda[1:132] %>%
+  gather("feature", "selected")
+
+df_gather_lda <- df_gather_lda %>%
+  group_by(feature) %>%
+  summarise(n_select = sum(selected)) %>%
+  arrange(n_select)
+
+summary(df_gather_lda$n_select)
+
+ggplot(df_gather_lda, aes(x = n_select)) +
+  geom_histogram(binwidth = 1, alpha = 0.6, color = "blue", fill = "blue") +
+  labs(x = "Vezes selecionada", y = "Frequência")
+```
+
+Considerando o classificador LDA, todas as características foram selecionadas no mínimo 2 vezes.
+
+<br>
+
+#### Perceptron:
+```{r, echo=FALSE}
+df_gather_perc <- df_perc[1:132] %>%
+  gather("feature", "selected")
+
+df_gather_perc <- df_gather_perc %>%
+  group_by(feature) %>%
+  summarise(n_select = sum(selected)) %>%
+  arrange(n_select)
+
+summary(df_gather_perc$n_select)
+
+ggplot(df_gather_perc, aes(x = n_select)) +
+  geom_histogram(binwidth = 1, alpha = 0.6, color = "blue", fill = "blue") +
+  labs(x = "Vezes selecionada", y = "Frequência")
+```
+
+Considerando o classificador Perceptron, todas as características foram selecionadas no mínimo 2 vezes.
+
+<hr>
+
+## Base de teste
+
+<br>
+
+### Desempenho médio
+
+<br>
+
+#### Geral:
+```{r, echo=FALSE}
+des_test <- mean(df$best_ind)
+des_test
+```
+
+<br>
+
+#### LDA:
+```{r, echo=FALSE}
+des_test_lda <- mean(df_lda$best_ind)
+des_test_lda
+```
+
+<br>
+
+#### Perceptron:
+```{r, echo=FALSE}
+des_test_perc <- mean(df_perc$best_ind)
+des_test_perc
+```
+
+<br>
+
+### Diferença média de desempenho entre o conjunto completo e o sub-conjunto com características selecionadas
+
+<br>
+
+#### Geral:
+```{r, echo=FALSE}
+des_all <- mean(df$all_feat)
+des_all - des_test
+```
+
+<br>
+
+#### LDA:
+```{r, echo=FALSE}
+des_all_lda <- mean(df_lda$all_feat)
+des_all_lda - des_test_lda
+```
+
+<br>
+
+#### Perceptron:
+```{r, echo=FALSE}
+des_all_perc <- mean(df_perc$all_feat)
+des_all_perc - des_test_perc
+```
+
+
+
+
+<hr>
+
+## Comparativo entre as bases de validação e teste
+
+<br>
+
+### Diferença média de desempenho
+
+<br>
+
+#### Geral:
+```{r, echo=FALSE}
+des_val - des_test
+```
+
+<br>
+
+#### LDA:
+```{r, echo=FALSE}
+des_val_lda - des_test_lda
+```
+
+<br>
+
+#### Perceptron:
+```{r, echo=FALSE}
+des_val_perc - des_test_perc
+```
+
+
+<hr>
+
+# Conclusão
+
+Os classificadores LDA e Perceptron apresentaram desempenho bastante parecido no experimento, tanto na base de validação quanto na de teste, no entanto, o LDA selecionou em média 80 características contra 74 selecionadas pelo Perceptron.

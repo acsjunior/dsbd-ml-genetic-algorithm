@@ -1,8 +1,6 @@
-# dsbd-ml-genetic-algorithm
+# Seleção de características com algoritmo genético.
 
-Atividade sobre seleção de características com algoritmo genético.
-
-Especialização em Data Science & Big Data - Universidade Federal do Paraná
+Atividade da especialização em Data Science & Big Data - Universidade Federal do Paraná
 
 Prof. Luiz Eduardo
 
